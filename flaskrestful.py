@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask,render_template
 from flask_restful import reqparse, abort, Api, Resource,fields,marshal_with
 from config import DevConfig
 from models import db,User
@@ -24,7 +24,9 @@ def abort_if_todo_doesnt_exist(todo_id):
 
 parser = reqparse.RequestParser()
 parser.add_argument('task')
-
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 # Todo
 # shows a single todo item and lets you delete a todo item

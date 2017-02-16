@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <div id='app'>
+{#        <div v-for="user in user">#}
+{#                <div>#}
+{#                    <p>{{user.id}}</p>#}
+{#                    <p>{{user.username}}</p>#}
+{#                </div>#}
+{#        </div>#}
+    </div>
+</body>
+<script src='../static/Vue.js'></script>
+<script src="../static/vue-resource.js"></script>
+<script>
+    var datas=({
+        users:[],
+        apiurl:'http://127.0.0.1:5000/user'
+    })
+    var test = new Vue({
+        el:"#app",
+        data:datas,
+        compiled: function() {
+            var self = this;
+            //在编译后即调用API接口取得服务器端数据
+            self.$http.get(this.apiurl).then(function (res) {
+                self.users = res.data;
+            })
+        }
+    })
+</script>
+</html>
