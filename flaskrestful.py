@@ -7,6 +7,9 @@ app = Flask(__name__)
 app.config.from_object(DevConfig)
 api = Api(app)
 db.init_app(app)
+# 修改Jinja2的配置，让他只渲染空格之间的数据，而Vue.js处理不加空格的模板。
+app.jinja_env.variable_start_string = '{{ '
+app.jinja_env.variable_end_string = ' }}'
 # 相当于数据库
 TODOS = {
     'todo1': {'task': 'build an API'},
