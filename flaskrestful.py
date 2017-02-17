@@ -1,4 +1,4 @@
-from flask import Flask,render_template
+from flask import Flask,render_template,request
 from flask_restful import reqparse, abort, Api, Resource,fields,marshal_with
 from config import DevConfig
 from models import db,User
@@ -74,6 +74,20 @@ class Userlist(Resource):
     def get(self):
         user=User.query.all()
         return user
+
+    def post(self):
+        if not request.json:
+            print('没有回传数据')
+            abort(400)
+        print('回传的数据是')
+        print(request.json['id'])
+        print(request.json['username'])
+        user=User(username=request.json['username'])
+        db.session.add(user)
+        db.session.commit()
+
+
+
 
 
 ## Actually setup the Api resource routing here

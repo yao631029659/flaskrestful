@@ -5,8 +5,13 @@
     <title>Title</title>
 </head>
 <body>
-    <div id='app'>
-        <div v-for="user in users">
+<div id='app'>
+    <fieldset>
+        <input type="text" v-model='new_user.id'>
+        <input type="text" v-model='new_user.username' >
+        <button @click="addUser">新增</button>
+    </fieldset>
+    <div v-for="user in users">
                 <div>
                     <tr>
                         <td>{{user.id}}</td>
@@ -21,7 +26,11 @@
 <script>
     var datas=({
         users:[],
-        apiurl:'http://127.0.0.1:5000/user'
+        apiurl:'http://127.0.0.1:5000/user',
+        new_user:{
+            id:'',
+            username:''
+        }
     })
     var test = new Vue({
         el:"#app",
@@ -31,20 +40,39 @@
           this.getUser()
         },
         methods:{
+{#            获取数据#}
             getUser:function () {
-                var self = this;
-                //在编译后即调用API接口取得服务器端数据
+                var self = this
                 self.$http.get(this.apiurl)
 {#                    响应成功的回调#}
                     .then((res) => {
+                        // 数据都写在respond.dta里面了
                         self.$set('users',res.data)
 {#                  响应失败的回调#}
                     },(res) => {
                         alert('error')
+                    // then在这里结束
                     })
 {#                  catch则是在整个请求到响应过程中，只要程序出错了就会被调用#}
                     .catch (function (response) {
                         console.log(response)
+                    })
+            },
+            // 新增函数
+            addUser: function() {
+				var self = this
+                // post单个数据用{} 而不是[] 每一个子项目是字典
+                // 每一个表格是数据里面包含字典[{1:'12'},[2:'124']]
+				self.$http.post(self.apiurl, {
+						id:self.new_user.id,
+						username: self.new_user.username
+//						新增之后取数据
+					})
+                    .then(function(res) {
+						self.getUser()
+					})
+                    .catch(function(){
+                        console.log(res)
                     })
             }
         }
