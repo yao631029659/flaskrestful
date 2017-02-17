@@ -26,12 +26,27 @@
     var test = new Vue({
         el:"#app",
         data:datas,
-        compiled: function() {
-            var self = this;
-            //在编译后即调用API接口取得服务器端数据
-            self.$http.get(this.apiurl).then(function (res) {
-                self.users = res.data;
-            })
+{#        html加载完后自动调用#}
+        ready:function(){
+          this.getUser()
+        },
+        methods:{
+            getUser:function () {
+                var self = this;
+                //在编译后即调用API接口取得服务器端数据
+                self.$http.get(this.apiurl)
+{#                    响应成功的回调#}
+                    .then((res) => {
+                        self.$set('users',res.data)
+{#                  响应失败的回调#}
+                    },(res) => {
+                        alert('error')
+                    })
+{#                  catch则是在整个请求到响应过程中，只要程序出错了就会被调用#}
+                    .catch (function (response) {
+                        console.log(response)
+                    })
+            }
         }
     })
 </script>
