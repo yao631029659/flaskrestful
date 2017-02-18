@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+    <script src="http://apps.bdimg.com/libs/jquery/2.0.0/jquery.min.js"></script>
+    <link href="http://apps.bdimg.com/libs/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <div id='app'>
@@ -11,14 +14,22 @@
         <input type="text" v-model='new_user.username' >
         <button @click="addUser">新增</button>
     </fieldset>
-    <div v-for="user in users">
-                <div>
-                    <tr>
-                        <td>{{user.id}}</td>
-                        <td>{{user.username}}</td>
-                    </tr>
-                </div>
-        </div>
+    <div>
+            <div>
+                <table class="table-responsive table table-striped">
+                    <thead>
+                        <th v-for="th in ths">{{th}}</th>
+                        <th>删除</th>
+                    </thead>
+                    <tbody>
+                        <tr v-for="user in users">
+                            <td v-for="th in ths">{{user[th]}}</td>
+                            {#                        在@click里面是js管理的地方 可以直接写user.id 不用{{  }}#}
+                            <td><button @click="deleteUser(user.id)">删除</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
     </div>
 </body>
 <script src='../static/Vue.js'></script>
@@ -27,21 +38,20 @@
     var datas=({
         users:[],
         apiurl:'http://127.0.0.1:5000/user',
-        new_user:{
-            id:'',
-            username:''
-        }
+        new_user:{},
+        ths:['id','username']
+
     })
     var test = new Vue({
         el:"#app",
         data:datas,
 {#        html加载完后自动调用#}
         ready:function(){
-          this.getUser()
+          this.getUsers()
         },
         methods:{
 {#            获取数据#}
-            getUser:function () {
+            getUsers:function () {
                 var self = this
                 self.$http.get(this.apiurl)
 {#                    响应成功的回调#}
@@ -62,16 +72,31 @@
             addUser: function() {
 				var self = this
                 // post单个数据用{} 而不是[] 每一个子项目是字典
-                // 每一个表格是数据里面包含字典[{1:'12'},[2:'124']]
+                // 每一个表格是数据里面包含字典就是行记录 传输的的其实是一个字典
+                // {'id': '11', 'username': 'test11'} 后台接收到的数据就是长这样的
 				self.$http.post(self.apiurl, {
 						id:self.new_user.id,
 						username: self.new_user.username
 //						新增之后取数据
 					})
                     .then(function(res) {
-						self.getUser()
+						self.getUsers()
+                        self.$set('new_user',{})
 					})
                     .catch(function(){
+                        console.log(res)
+                    })
+            },
+{#            删除数据 带参数的函数#}
+            deleteUser:function (id) {
+                var self=this
+{#                第一个参数一般写后面#}
+                self.$http.delete(this.apiurl + '/' + id)
+                    .then(function () {
+                        this.getUsers()
+                    }
+                    )
+                    .catch(function (res) {
                         console.log(res)
                     })
             }

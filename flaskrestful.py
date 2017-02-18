@@ -82,12 +82,20 @@ class Userlist(Resource):
         print('回传的数据是')
         print(request.json['id'])
         print(request.json['username'])
+        #  request.json回传的数据是字典
         user=User(username=request.json['username'])
+        print(request.json)
         db.session.add(user)
         db.session.commit()
 
-
-
+class Users(Resource):
+    def delete(self,user_id):
+        print('删除被调用')
+        print('user_id',user_id)
+        # print(request.json) request 用json是收不到值的
+        user=User.query.filter_by(id=user_id).first()
+        db.session.delete(user)
+        db.session.commit()
 
 
 ## Actually setup the Api resource routing here
@@ -95,6 +103,7 @@ class Userlist(Resource):
 api.add_resource(TodoList, '/todos')
 api.add_resource(Todo, '/todos/<todo_id>')
 api.add_resource(Userlist,'/user')
+api.add_resource(Users,'/user/<user_id>')
 
 
 if __name__ == '__main__':
