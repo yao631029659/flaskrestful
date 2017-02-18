@@ -8,28 +8,39 @@
     <link href="http://apps.bdimg.com/libs/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-<div id='app'>
-    <fieldset>
-        <input type="text" v-model='new_user.id'>
-        <input type="text" v-model='new_user.username' >
-        <button @click="addUser">新增</button>
-    </fieldset>
-    <div>
-            <div>
-                <table class="table-responsive table table-striped">
-                    <thead>
-                        <th v-for="th in ths">{{th}}</th>
-                        <th>删除</th>
-                    </thead>
-                    <tbody>
-                        <tr v-for="user in users">
-                            <td v-for="th in ths">{{user[th]}}</td>
-                            {#                        在@click里面是js管理的地方 可以直接写user.id 不用{{  }}#}
-                            <td><button @click="deleteUser(user.id)">删除</button></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+    <div id='app'>
+        <!-- 新增 -->
+        <fieldset class="add">
+            <legend>新增</legend>
+            <label>username</label>
+            <input type="text" v-model='new_user.username'>
+            <button @click="addUser">新增</button>
+        </fieldset>
+        <!-- 修改的页面 平时是隐藏 -->
+        <fieldset v-show="modify_show">
+            <legend>修改</legend>
+            <label>id</label><input type="text" v-model='modify_user.id' value="modify_user.id" disabled>
+            <label>username</label><input type="text" v-model='modify_user.username' value="modify_user.username">
+            <button @click='updateUser'>保存</button>
+        </fieldset>
+        <!-- 表格呈现 -->
+        <div>
+            <table class="table-responsive table table-striped">
+                <thead>
+                    <th v-for="th in ths">{{th}}</th>
+                    <th>删除</th>
+                    <th>修改</th>
+                </thead>
+                <tbody>
+                    <tr v-for="user in users">
+                        <td v-for="th in ths">{{user[th]}}</td>
+                        {#                        在@click里面是js管理的地方 可以直接写user.id 不用{{  }}#}
+                        <td><button @click="deleteUser(user.id)">删除</button></td>
+                        <td><button @click="showUpdatecontrol(user.id,user.username)">修改</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </body>
 <script src='../static/Vue.js'></script>
@@ -39,9 +50,10 @@
         users:[],
         apiurl:'http://127.0.0.1:5000/user',
         new_user:{},
-        ths:['id','username']
-
-    })
+        ths:['id','username'],
+        modify_user:{},
+        modify_show:false
+        })
     var test = new Vue({
         el:"#app",
         data:datas,
@@ -56,7 +68,7 @@
                 self.$http.get(this.apiurl)
 {#                    响应成功的回调#}
                     .then((res) => {
-                        // 数据都写在respond.dta里面了
+                        // 数据都写在respond.data里面了
                         self.$set('users',res.data)
 {#                  响应失败的回调#}
                     },(res) => {
@@ -87,6 +99,13 @@
                         console.log(res)
                     })
             },
+            // 弹出修改页面 并把数据写入
+            showUpdatecontrol:function(id,username){
+                var self=this
+                this.modify_show=true
+                this.modify_user.id=id
+                this.modify_user.username=username
+            },
 {#            删除数据 带参数的函数#}
             deleteUser:function (id) {
                 var self=this
@@ -99,6 +118,16 @@
                     .catch(function (res) {
                         console.log(res)
                     })
+            },
+            // 修改数据
+            updateUser:function(){
+                var self=this
+                self.$http.put(this.apiurl + '/' + this.modify_user.id,this.modify_user)
+                    .then((res)=>{
+                        this.getUsers()
+                        this.modify_show=false
+                    })
+
             }
         }
     })

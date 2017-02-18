@@ -31,45 +31,13 @@ parser.add_argument('task')
 def index():
     return render_template('index.html')
 
-# Todo
-# shows a single todo item and lets you delete a todo item
-class Todo(Resource):
-    def get(self, todo_id):
-        abort_if_todo_doesnt_exist(todo_id)
-        return TODOS[todo_id]
-
-    def delete(self, todo_id):
-        abort_if_todo_doesnt_exist(todo_id)
-        del TODOS[todo_id]
-        return '', 204
-
-    def put(self, todo_id):
-        args = parser.parse_args()
-        task = {'task': args['task']}
-        TODOS[todo_id] = task
-        return task, 201
-
-
-# TodoList
-# shows a list of all todos, and lets you POST to add new tasks
-class TodoList(Resource):
-    def get(self):
-        return TODOS
-
-    def post(self):
-        args = parser.parse_args()
-        # 找到最大的序列号 然后加1
-        todo_id = int(max(TODOS.keys()).lstrip('todo')) + 1
-        todo_id = 'todo%i' % todo_id
-        TODOS[todo_id] = {'task': args['task']}
-        return TODOS[todo_id], 201
-
-##
+# 控制显示的字段
 post_fileds={
     'id':fields.Integer,
     'username':fields.String
 }
 class Userlist(Resource):
+    # 把数据查询json化
     @marshal_with(post_fileds)
     def get(self):
         user=User.query.all()
@@ -80,7 +48,6 @@ class Userlist(Resource):
             print('没有回传数据')
             abort(400)
         print('回传的数据是')
-        print(request.json['id'])
         print(request.json['username'])
         #  request.json回传的数据是字典
         user=User(username=request.json['username'])
@@ -88,6 +55,7 @@ class Userlist(Resource):
         db.session.add(user)
         db.session.commit()
 
+# 删除和修改都必须使用带url参数的
 class Users(Resource):
     def delete(self,user_id):
         print('删除被调用')
@@ -97,11 +65,18 @@ class Users(Resource):
         db.session.delete(user)
         db.session.commit()
 
+    def put(self,user_id):
+        print('修改被调用')
+        print('user_id',user_id)
+        print(request.json)
+        user=User.query.filter_by(id=user_id).first()
+        user.username=request.json['username']
+        db.session.commit()
+
+
 
 ## Actually setup the Api resource routing here
 ##
-api.add_resource(TodoList, '/todos')
-api.add_resource(Todo, '/todos/<todo_id>')
 api.add_resource(Userlist,'/user')
 api.add_resource(Users,'/user/<user_id>')
 
